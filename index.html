@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Avances - Adenda Complementaria</title>
+
+    <!-- Scripts de Librerías Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Hojas de Estilo Externas -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+
+    <!-- Hoja de estilos mejorada -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Loader de pantalla completa -->
+    <div id="globalLoader" class="global-loader hidden">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <p>Procesando datos...</p>
+        </div>
+    </div>
+
+    <!-- Header mejorado -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-section">
+                    <i class="fa-solid fa-chart-line header-icon"></i>
+                    <div class="header-text">
+                        <h1>Reporte de Avances</h1>
+                        <span class="subtitle">Adenda Complementaria - Proyecto Aguas Marítimas</span>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="header-center">
+
+                <div class="stat-pill">
+                    <i class="fas fa-file-alt"></i>
+                    <span id="headerTotalItems">0</span>
+                    <small>Total</small>
+                </div>
+                <div class="stat-pill success">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="headerIncorporated">0</span>
+                    <small>Incorporados</small>
+                </div>
+                <div class="stat-pill editorial">
+                    <i class="fas fa-pen-to-square"></i>
+                    <span id="headerEditorial">0</span>
+                    <small>En Editorial</small>
+                </div>
+            </div>
+            <div class="header-right">
+                <!-- 1. Stats de progreso -->
+
+                <!-- 2. Área de carga de archivos -->
+                <div class="header-upload-area">
+                    <input type="file" id="fileInput" accept=".json" multiple>
+                    <label for="fileInput" class="btn-header-upload" title="Cargar archivos JSON">
+                        <i class="fas fa-upload"></i>
+                        <span class="upload-text">Cargar Datos</span>
+                    </label>
+                    <!-- El ID 'fileNameDisplay' se mantiene para que el JS funcione -->
+                    <div class="header-file-info" id="fileNameDisplay">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Ningún archivo</span>
+                    </div>
+                </div>
+
+                <!-- 3. Botón de tema -->
+                <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-wrapper">
+        <!-- Sidebar mejorado con toggle -->
+        <div class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-sliders-h"></i> Panel de Control</h2>
+                <button class="sidebar-close" onclick="toggleSidebar()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+
+
+                <!-- Filtros mejorados -->
+                <div class="control-section">
+                    <h3><i class="fas fa-filter"></i> Filtros</h3>
+
+                    <div class="filter-grid">
+                        <div class="control-group">
+                            <label for="weekSelect">
+                                <i class="fas fa-calendar-week"></i>
+                                Semana
+                            </label>
+                            <select id="weekSelect" class="enhanced-select">
+                                <option value="">Cargue datos</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="daySelect">
+                                <i class="fas fa-calendar-day"></i>
+                                Día (Fecha Reporte)
+                            </label>
+                            <select id="daySelect" class="enhanced-select" disabled>
+                                <option value="">Seleccione semana</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="tematicaSelect">
+                                <i class="fas fa-tags"></i>
+                                Temática General
+                            </label>
+                            <select id="tematicaSelect" class="enhanced-select" disabled>
+                                <option value="all">Todas</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="itemSelect">
+                                <i class="fas fa-list"></i>
+                                Ítem Específico
+                            </label>
+                            <select id="itemSelect" class="enhanced-select" disabled>
+                                <option value="all">Todos</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="personSelect">
+                                <i class="fas fa-user"></i>
+                                Persona (Rol)
+                            </label>
+                            <select id="personSelect" class="enhanced-select" disabled>
+                                <option value="all">Todas</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="stateSelect">
+                                <i class="fas fa-tasks"></i>
+                                Estado
+                            </label>
+                            <select id="stateSelect" class="enhanced-select" disabled>
+                                <option value="all">Todos</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="subcontractSelect">
+                                <i class="fas fa-building"></i>
+                                Subcontrato
+                            </label>
+                            <select id="subcontractSelect" class="enhanced-select" disabled>
+                                <option value="all">Todos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Botón para limpiar filtros -->
+                    <button class="clear-filters-btn" onclick="clearAllFilters()">
+                        <i class="fas fa-eraser"></i>
+                        Limpiar Filtros
+                    </button>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Acciones mejoradas -->
+                <div class="control-section">
+                    <h3><i class="fas fa-cogs"></i> Acciones</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn primary" onclick="showComparisonView()">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Comparar Fechas</span>
+                        </button>
+                        <button class="action-btn info" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i>
+                            <span>Exportar Excel</span>
+                        </button>
+                        <button class="action-btn danger" onclick="clearAllData()">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Limpiar Datos</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Indicadores -->
+                <div id="loadingIndicator" class="loading-indicator hidden">
+                    <div class="spinner"></div>
+                    <span>Cargando datos...</span>
+                </div>
+
+                <div id="alertBox" class="alert hidden"></div>
+            </div>
+        </aside>
+
+        <!-- Área principal mejorada -->
+        <main class="main-content">
+            <!-- Mensaje cuando no hay datos -->
+            <div id="noDataMessage" class="no-data-state">
+                <div class="no-data-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h3>¡Comienza cargando tus datos!</h3>
+                <p>Utiliza el panel de control para cargar archivos JSON y comenzar a visualizar tus reportes.</p>
+                <div class="features-preview">
+                    <div class="feature-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Análisis visual</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-filter"></i>
+                        <span>Filtros avanzados</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Comparaciones</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista de subcontratos mejorada con pestañas -->
+            <div id="subcontractView" class="content-section hidden">
+                <div class="section-header">
+                    <h2><i class="fas fa-file-signature"></i> Progreso por Subcontrato</h2>
+                    <div class="section-actions">
+                        <button class="btn-icon" onclick="exportSubcontractToExcel()" title="Exportar a Excel">
+                            <i class="fas fa-file-excel"></i>
+                        </button>
+                        <button class="btn-icon" onclick="refreshSubcontractView()" title="Actualizar">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pestañas de navegación -->
+                <div class="tabs-navigation">
+                    <button class="tab-btn active" onclick="switchTab('overview')" data-tab="overview">
+                        <i class="fas fa-chart-bar"></i>
+                        Resumen
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('details')" data-tab="details">
+                        <i class="fas fa-list-alt"></i>
+                        Detalle de Items
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('timeline')" data-tab="timeline">
+                        <i class="fas fa-calendar-alt"></i>
+                        Cronograma
+                    </button>
+                </div>
+
+                <!-- Contenido de las pestañas -->
+                <div class="tabs-content">
+                    <!-- Pestaña Resumen -->
+                    <div id="tab-overview" class="tab-content active">
+                        <div id="subcontractProgressContainer" class="progress-container">
+                            <!-- Contenido generado por JS -->
+                        </div>
+                    </div>
+
+                    <!-- Pestaña Detalle de Items -->
+                    <div id="tab-details" class="tab-content hidden">
+                        <div id="subcontractDetailsContainer" class="details-container">
+                            <!-- Contenido generado por JS -->
+                        </div>
+                    </div>
+
+                    <!-- Pestaña Cronograma -->
+                    <div id="tab-timeline" class="tab-content hidden">
+                        <div id="subcontractTimelineContainer" class="timeline-container">
+                            <!-- Contenido generado por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenedor de análisis principal con pestañas -->
+            <div id="analysisContainer" class="content-section hidden">
+                <!-- Pestañas principales de análisis -->
+                <div class="main-tabs-navigation">
+                    <button class="main-tab-btn active" onclick="switchMainTab('dashboard')" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard Principal
+                    </button>
+                    <button class="main-tab-btn" onclick="switchMainTab('roles')" data-tab="roles">
+                        <i class="fas fa-users"></i>
+                        Análisis por Roles
+                    </button>
+                    <button class="main-tab-btn" onclick="switchMainTab('reports')" data-tab="reports">
+                        <i class="fas fa-file-alt"></i>
+                        Reportes
+                    </button>
+                </div>
+
+                <!-- Contenido de las pestañas principales -->
+                <div class="main-tabs-content">
+                    <!-- Pestaña Dashboard Principal (Ahora contiene todo) -->
+                    <div id="main-tab-dashboard" class="main-tab-content active">
+                        <!-- 1. Resumen Ejecutivo (Estadísticas) -->
+                        <div class="section-header" data-section="stats">
+                            <h2><i class="fas fa-tachometer-alt"></i> Resumen Ejecutivo</h2>
+                            <div class="section-actions">
+                                <button class="view-toggle active" data-view="cards" onclick="switchStatsView('cards')">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                                <button class="view-toggle" data-view="list" onclick="switchStatsView('list')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="stats-container">
+                            <div class="stats-grid" id="statsGrid">
+                                <div class="stat-card total">
+                                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                                    <div class="stat-content">
+                                        <h2>Total</h2>
+                                        <div class="stat-value" id="totalItems">0</div>
+                                        <div id="totalItemsPrev" class="stat-comparison hidden"></div>
+                                    </div>
+                                    <div class="stat-trend" id="totalTrend"></div>
+                                </div>
+                                <div class="stat-card adc">
+                                    <div class="stat-icon"><i class="fas fa-file-signature"></i></div>
+                                    <div class="stat-content">
+                                        <h2>ADC</h2>
+                                        <div class="stat-value" id="totalADC">0</div>
+                                        <div id="totalADCPrev" class="stat-comparison hidden"></div>
+                                    </div>
+                                    <div class="stat-trend" id="adcTrend"></div>
+                                </div>
+                                <div class="stat-card pac">
+                                    <div class="stat-icon"><i class="fas fa-file-contract"></i></div>
+                                    <div class="stat-content">
+                                        <h2>PAC</h2>
+                                        <div class="stat-value" id="totalPAC">0</div>
+                                        <div id="totalPACPrev" class="stat-comparison hidden"></div>
+                                    </div>
+                                    <div class="stat-trend" id="pacTrend"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenedor de Comparación (se muestra al hacer click en el botón) -->
+                        <div class="comparison-container hidden" id="comparisonContainer">
+                            <div class="section-header">
+                                <h2><i class="fas fa-balance-scale"></i> Comparación entre Fechas</h2>
+                                <button class="btn-icon" onclick="hideComparisonView()" title="Cerrar"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="comparison-controls">
+                                <div class="date-selector-group">
+                                    <label>Fecha 1:</label>
+                                    <input type="date" id="compareDate1" class="date-input">
+                                </div>
+                                <div class="vs-separator">VS</div>
+                                <div class="date-selector-group">
+                                    <label>Fecha 2:</label>
+                                    <input type="date" id="compareDate2" class="date-input">
+                                </div>
+                                <div class="filter-selector-group">
+                                    <label>Filtro:</label>
+                                    <select id="comparisonFilter" class="filter-select">
+                                        <option value="all">Todos</option>
+                                        <option value="ADC">Solo ADC</option>
+                                        <option value="PAC">Solo PAC</option>
+                                    </select>
+                                </div>
+                                <button class="action-btn primary" onclick="executeComparison()"><i class="fas fa-sync"></i> Comparar</button>
+                            </div>
+                            <div class="comparison-results" id="comparisonResults"></div>
+                        </div>
+
+                        <!-- 2. Gráficos de Distribución -->
+                        <div class="section-header" data-section="charts">
+                            <h2><i class="fas fa-chart-pie"></i> Distribución por Estado</h2>
+                            <div class="section-actions">
+                                <button class="action-btn success" onclick="copyAllChartsToClipboard()" title="Copiar los 3 gráficos al portapapeles">
+                                    <i class="fas fa-copy"></i> Copiar Todos
+                                </button>
+                                <button class="view-toggle active" data-view="grid" onclick="switchChartsView('grid')"><i class="fas fa-th"></i></button>
+                                <button class="view-toggle" data-view="carousel" onclick="switchChartsView('carousel')"><i class="fas fa-sliders-h"></i></button>
+                            </div>
+                        </div>
+                        <div class="charts-section">
+                            <div class="charts-container" id="chartsContainer">
+                                <div class="chart-card" id="chartTotalCard">
+                                    <div class="chart-header">
+                                        <h3>Todos los Documentos</h3>
+                                        <div class="chart-actions">
+                                            <button class="btn-icon" onclick="downloadChart('chartTotal')" title="Descargar"><i class="fas fa-download"></i></button>
+                                            <button class="btn-icon" onclick="copyChartToClipboard('chartTotal')" title="Copiar al portapapeles"><i class="fas fa-copy"></i></button>
+                                            <button class="btn-icon" onclick="toggleChartTable('Total')" title="Ver tabla"><i class="fas fa-table"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-wrapper"><canvas id="chartTotal"></canvas></div>
+                                    <table class="chart-legend-table" id="legendTotal">
+                                        <thead><tr><th>Estado</th><th style="text-align: right;">Cantidad</th><th style="text-align: right;">%</th></tr></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="chart-card" id="chartADCCard">
+                                    <div class="chart-header">
+                                        <h3>Documentos ADC</h3>
+                                        <div class="chart-actions">
+                                            <button class="btn-icon" onclick="downloadChart('chartADC')" title="Descargar"><i class="fas fa-download"></i></button>
+                                            <button class="btn-icon" onclick="copyChartToClipboard('chartADC')" title="Copiar al portapapeles"><i class="fas fa-copy"></i></button>
+                                            <button class="btn-icon" onclick="toggleChartTable('ADC')" title="Ver tabla"><i class="fas fa-table"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-wrapper"><canvas id="chartADC"></canvas></div>
+                                    <table class="chart-legend-table" id="legendADC">
+                                        <thead><tr><th>Estado</th><th style="text-align: right;">Cantidad</th><th style="text-align: right;">%</th></tr></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div class="chart-card" id="chartPACCard">
+                                    <div class="chart-header">
+                                        <h3>Documentos PAC</h3>
+                                        <div class="chart-actions">
+                                            <button class="btn-icon" onclick="downloadChart('chartPAC')" title="Descargar"><i class="fas fa-download"></i></button>
+                                            <button class="btn-icon" onclick="copyChartToClipboard('chartPAC')" title="Copiar al portapapeles"><i class="fas fa-copy"></i></button>
+                                            <button class="btn-icon" onclick="toggleChartTable('PAC')" title="Ver tabla"><i class="fas fa-table"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="chart-wrapper"><canvas id="chartPAC"></canvas></div>
+                                    <table class="chart-legend-table" id="legendPAC">
+                                        <thead><tr><th>Estado</th><th style="text-align: right;">Cantidad</th><th style="text-align: right;">%</th></tr></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Evolución Temporal -->
+                        <div class="section-header">
+                            <h2><i class="fas fa-chart-line"></i> Evolución Temporal</h2>
+                            <div class="section-actions" id="evolution-controls">
+                                <!-- Controles de Filtro -->
+                                <button class="view-toggle active" onclick="filterEvolutionChart('TODOS')" title="Todos los documentos">Todos</button>
+                                <button class="view-toggle" onclick="filterEvolutionChart('ADC')" title="Filtrar por ADC">ADC</button>
+                                <button class="view-toggle" onclick="filterEvolutionChart('PAC')" title="Filtrar por PAC">PAC</button>
+                                <div style="width: 20px;"></div> <!-- Separador visual -->
+                                <!-- Controles de Acción -->
+                                <button class="btn-icon" onclick="copyEvolutionChartToClipboard()" title="Copiar al portapapeles"><i class="fas fa-copy"></i></button>
+                                <button class="btn-icon" onclick="downloadEvolutionChart()" title="Descargar"><i class="fas fa-download"></i></button>
+                            </div>
+                        </div>
+                        <div class="evolution-container" id="evolutionContainer">
+                            <div class="evolution-chart-container">
+                                <canvas id="evolutionChart"></canvas>
+                            </div>
+                            <div id="projectionInfo" class="projection-info hidden">
+        <!-- El contenido será generado por JavaScript -->
+    </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pestaña Análisis por Roles -->
+                    <div id="main-tab-roles" class="main-tab-content hidden">
+                        <div class="role-section">
+                            <div class="section-header">
+                                <h2><i class="fas fa-users"></i> Comparativo de Roles y Estados</h2>
+                                <div class="section-actions">
+                                    <label for="rolesOrderSelect" style="margin-right: 8px; font-weight: 500;">Ordenar por:</label>
+                                    <select id="rolesOrderSelect" class="enhanced-select" style="width: auto; display: inline-block;">
+                                        <option value="alfabetico">Alfabético</option>
+                                        <option value="carga">Carga</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 32px;">
+                                <canvas id="rolesChart" height="120"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pestaña Reportes -->
+                    <div id="main-tab-reports" class="main-tab-content hidden">
+                        <div class="section-header">
+                            <h2><i class="fas fa-file-alt"></i> Generación de Reportes</h2>
+                            <div class="section-actions"><button class="btn-icon" onclick="refreshReports()" title="Actualizar"><i class="fas fa-sync-alt"></i></button></div>
+                        </div>
+                        <div class="report-options">
+                            <div class="report-card">
+                                <div class="report-icon"><i class="fas fa-table"></i></div>
+                                <h3>Reporte Detallado</h3>
+                                <p>Exporta todos los datos con detalles completos</p>
+                                <button class="action-btn primary" onclick="exportDetailedReport()"><i class="fas fa-file-excel"></i> Generar Excel</button>
+                            </div>
+                            <div class="report-card">
+                                <div class="report-icon"><i class="fas fa-chart-bar"></i></div>
+                                <h3>Reporte Ejecutivo</h3>
+                                <p>Resumen con gráficos y estadísticas clave</p>
+                                <button class="action-btn success" onclick="generateExecutiveReport()"><i class="fas fa-file-pdf"></i> Generar PDF</button>
+                            </div>
+                            <div class="report-card">
+                                <div class="report-icon"><i class="fas fa-calendar-alt"></i></div>
+                                <h3>Reporte de Cronograma</h3>
+                                <p>Estado de entregas y fechas programadas</p>
+                                <button class="action-btn info" onclick="generateTimelineReport()"><i class="fas fa-calendar-check"></i> Generar Cronograma</button>
+                            </div>
+                        </div>
+                        <div class="report-stats">
+                            <h3>Estadísticas de Reportes</h3>
+                            <div id="reportStatsContainer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para mostrar preguntas (mejorado) -->
+    <div id="questionsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Preguntas en Estado</h2>
+                <button type="button" class="modal-close" onclick="closeModal('questionsModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <ul id="questionsList" class="question-list"></ul>
+                <p id="modalOverflowNote" class="overflow-note hidden"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Botón de acción flotante -->
+    <button class="floating-action-button" onclick="showQuickActions()" title="Acciones rápidas"><i class="fas fa-plus"></i></button>
+
+    <!-- Modal de acciones rápidas -->
+    <div id="quickActionsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Acciones Rápidas</h2>
+                <button type="button" class="modal-close" onclick="closeModal('quickActionsModal')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="quick-actions-grid">
+                    <button class="quick-action-btn" onclick="exportToExcel(); closeModal('quickActionsModal');"><i class="fas fa-file-excel"></i><span>Exportar Excel</span></button>
+                    <button class="quick-action-btn" onclick="showComparisonView(); closeModal('quickActionsModal');"><i class="fas fa-chart-line"></i><span>Comparar Fechas</span></button>
+                    <button class="quick-action-btn" onclick="clearAllFilters(); closeModal('quickActionsModal');"><i class="fas fa-eraser"></i><span>Limpiar Filtros</span></button>
+                    <button class="quick-action-btn" onclick="switchMainTab('roles'); closeModal('quickActionsModal');"><i class="fas fa-users"></i><span>Ver Roles</span></button>
+                    <button class="quick-action-btn" onclick="switchMainTab('reports'); closeModal('quickActionsModal');"><i class="fas fa-file-alt"></i><span>Generar Reportes</span></button>
+                    <button class="quick-action-btn" onclick="toggleTheme(); closeModal('quickActionsModal');"><i class="fas fa-palette"></i><span>Cambiar Tema</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script mejorado -->
+    <script src="script.js"></script>
+</body>
+
+</html>
