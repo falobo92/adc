@@ -2945,23 +2945,6 @@ function switchChartsView(view) {
 
 // ===== FIN: CÓDIGO A REEMPLAZAR =====
 
-function toggleRoleView() {
-    // TODO: Implementar toggle de vista de roles
-    showToast('Vista de roles alternada', 'info');
-}
-
-function toggleEvolutionFullscreen() {
-    const container = dom.evolutionContainer;
-    if (!container) return;
-    
-    if (container.classList.contains('fullscreen')) {
-        container.classList.remove('fullscreen');
-        showToast('Modo normal activado', 'info');
-    } else {
-        container.classList.add('fullscreen');
-        showToast('Modo pantalla completa activado', 'info');
-    }
-}
 
 function downloadChart(chartId) {
     const canvas = document.getElementById(chartId);
@@ -4498,8 +4481,6 @@ window.clearAllFilters = clearAllFilters;
 window.refreshSubcontractView = refreshSubcontractView;
 window.switchStatsView = switchStatsView;
 window.switchChartsView = switchChartsView;
-window.toggleRoleView = toggleRoleView;
-window.toggleEvolutionFullscreen = toggleEvolutionFullscreen;
 window.downloadChart = downloadChart;
 window.toggleChartTable = toggleChartTable;
 window.switchTab = switchTab;
