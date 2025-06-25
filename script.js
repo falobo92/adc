@@ -4,6 +4,7 @@ let currentFilteredData = [];
 let currentEvolutionData = []; 
 let charts = {};
 let previousStats = null;
+let currentTheme = localStorage.getItem('theme') || 'light';
 let sidebarOpen = false;
 let currentSubcontractData = [];
 let currentSubcontractName = '';
@@ -161,7 +162,12 @@ function initializeApp() {
     }
     Chart.register(centerTextPlugin);
 
+    // Aplicar tema guardado
+    applyTheme(currentTheme);
+    
+    // Configurar eventos
     setupEventListeners();
+    
     // Inicializar datos y filtros
     initializeDataAndFilters();
 
@@ -190,6 +196,20 @@ function setupEventListeners() {
 }
 
 // ===== FUNCIONES DE TEMA =====
+function toggleTheme() {
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+    applyTheme(currentTheme);
+    localStorage.setItem('theme', currentTheme);
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const themeIcon = document.querySelector('.theme-toggle i');
+    if (themeIcon) {
+        themeIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+}
+
 // ===== FUNCIONES DE SIDEBAR =====
 function toggleSidebar() {
     sidebarOpen = !sidebarOpen;
@@ -1627,6 +1647,7 @@ function analyzeAndDisplayData(data) {
             break;
     }
     
+    updateQuickStats();
 }
 
 function animateNumber(element, targetNumber) {
@@ -4447,6 +4468,7 @@ function downloadTimelineChart() {
 
 // ===== INICIALIZACIÓN FINAL =====
 // Asegurar que todas las funciones estén disponibles globalmente
+window.toggleTheme = toggleTheme;
 window.toggleSidebar = toggleSidebar;
 window.showComparisonView = showComparisonView;
 window.hideComparisonView = hideComparisonView;
@@ -4473,16 +4495,75 @@ window.exportTimelineToExcel = exportTimelineToExcel;
 window.refreshReports = refreshReports;
 window.downloadEvolutionChart = downloadEvolutionChart;
 
+window.showQuickActions = showQuickActions;
+window.updateQuickStats = updateQuickStats;
 window.switchTimelineView = switchTimelineView;
 window.filterTimelineByState = filterTimelineByState;
 window.refreshTimeline = refreshTimeline;
 window.copyChartToClipboard = copyChartToClipboard;
 window.copyAllChartsToClipboard = copyAllChartsToClipboard;
 
+// ===== FUNCIONES DE ACCIONES RÁPIDAS =====
+function showQuickActions() {
+    const modal = document.getElementById('quickActionsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Añadir animación de entrada
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+    }
+}
+
+function updateQuickStats() {
+    const quickStats = document.getElementById('quickStats');
+    const quickTotal = document.getElementById('quickTotal');
+    const quickCompleted = document.getElementById('quickCompleted');
+    const quickProgress = document.getElementById('quickProgress');
+    
+    if (!quickStats || !currentFilteredData) return;
+    
+    const total = currentFilteredData.length;
+    const completed = currentFilteredData.filter(item => item.Estado === 'Incorporada').length;
+    const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    if (quickTotal) quickTotal.textContent = total;
+    if (quickCompleted) quickCompleted.textContent = completed;
+    if (quickProgress) quickProgress.textContent = progress + '%';
+    
+    // Mostrar/ocultar estadísticas rápidas según si hay datos
+    if (total > 0) {
+        quickStats.classList.remove('hidden');
+        setTimeout(() => quickStats.classList.add('show'), 100);
+    } else {
+        quickStats.classList.add('hidden');
+        quickStats.classList.remove('show');
+    }
+}
+
+// ===== MEJORAS EN LA INICIALIZACIÓN =====
 function initializeEnhancedFeatures() {
     // Inicializar tooltips para elementos Gantt
     addGlobalEventListeners();
-    // Configurar atajos de teclado
+    
+    // Configurar observador de cambios para auto-actualizar estadísticas
+    if (window.MutationObserver) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList' && 
+                    mutation.target.id === 'totalItems') {
+                    updateQuickStats();
+                }
+            });
+        });
+        
+        const totalElement = document.getElementById('totalItems');
+        if (totalElement) {
+            observer.observe(totalElement, { childList: true, subtree: true });
+        }
+    }
+    
+    // Configurar teclado para acciones rápidas
     document.addEventListener('keydown', handleKeyboardShortcuts);
     
     // Inicializar estado de pestañas principales
@@ -4511,6 +4592,12 @@ function addGlobalEventListeners() {
 }
 
 function handleKeyboardShortcuts(e) {
+    // Ctrl/Cmd + K para acciones rápidas
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        showQuickActions();
+    }
+    
     // Escape para cerrar modales
     if (e.key === 'Escape') {
         const modals = document.querySelectorAll('.modal');
@@ -4738,6 +4825,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Esperar un poco para que se carguen todos los elementos
     setTimeout(() => {
         initializeEnhancedFeatures();
+        updateQuickStats();
     }, 500);
 });
 
